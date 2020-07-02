@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
+    "@tensorflow-models/facemesh": "0.0.3",
+    "@tensorflow/tfjs": "^2.0.1",
     "core-js": "^3.6.5",
     "quasar": "^1.0.0"
   },
