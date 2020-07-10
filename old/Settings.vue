@@ -1,9 +1,7 @@
 <template>
 <q-page>
   Settings
-  <keep-alive>
     <q-select filled v-model="model" :options="options" label="Standard"/>
-  </keep-alive>
 </q-page>
 </template>
 

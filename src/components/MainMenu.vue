@@ -8,21 +8,11 @@
         Face Mesh
       </a>
     </q-toolbar-title>
-
-    <q-tabs items-left active-bg-color="red" indicator-color="white">
-      <q-route-tab
-        label="View Face"
-        to="face"
-        exact
-      />
-      <q-route-tab
-        label="Settings"
-        to="settings"
-        exact
-      />
-    </q-tabs>
+<!--      <q-tabs items-left active-bg-color="red" indicator-color="white">-->
+<!--        <q-tab name="camera" label="Camera" />-->
+<!--        <q-tab name="settings" label="settings" />-->
+<!--      </q-tabs>-->
   </q-toolbar>
-
 
 </template>
 
