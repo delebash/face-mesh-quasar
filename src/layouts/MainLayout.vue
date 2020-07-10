@@ -2,7 +2,7 @@
   <q-layout view="hHh lpR lfr">
 
     <q-header elevated class="bg-primary text-white">
-      <Mainmenu></Mainmenu>
+      <TitleBar></TitleBar>
     </q-header>
 
     <q-page-container>
@@ -13,13 +13,11 @@
 </template>
 
 <script>
-import Mainmenu from "../components/MainMenu";
+
+import TitleBar from "../components/TitleBar";
 
 export default {
-  components: {Mainmenu},
-  component: {
-    'mainmenu': require('../components/MainMenu').default
-  }
+  components: {TitleBar},
 }
 
 </script>
