@@ -11,7 +11,6 @@
       <q-page class="row">
         <q-tab-panels class="" v-model="tab" swipeable animated style="width: 100%">
           <q-tab-panel class="no-padding" name="preview" style="background:red;">
-            <div class="text-h6">Preview</div>
             <div class="">
               Preview
             </div>
@@ -19,9 +18,8 @@
 
           <q-tab-panel class="no-padding" swipeable name="settings"
                        style="background:green;">
-            <div class="text-h6">Settings</div>
             <div class="">
-              Settings
+              <q-select v-model="model" :options="options" label="Standard"/>
             </div>
           </q-tab-panel>
         </q-tab-panels>
@@ -33,8 +31,29 @@
 export default {
   data() {
     return {
-      tab: ''
+      tab: '',
+      model: null,
+      options: []
     }
+  },
+  async mounted() {
+    this.options = await getCameraList()
   }
+}
+
+async function getCameraList() {
+  let cameraList = [];
+  await navigator.mediaDevices.getUserMedia({video: true})
+  let mediaDevices = await navigator.mediaDevices.enumerateDevices()
+
+  mediaDevices.forEach(mediaDevice => {
+    let camera = {}
+    if (mediaDevice.kind === 'videoinput') {
+      camera.value = mediaDevice.deviceId
+      camera.label = mediaDevice.label
+      cameraList.push(camera)
+    }
+  });
+  return cameraList
 }
 </script>
