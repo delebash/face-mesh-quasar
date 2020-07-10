@@ -1,76 +1,92 @@
 <template>
   <q-page padding>
     View Face
-    <q-select filled v-model="model" :options="options" label="Standard"/>
+
     <div class="container">
-      <div class="canvas-wrapper">
+      <div>
         <canvas id="output"></canvas>
-        <video id="video" playsinline style="
-          -webkit-transform: scaleX(-1);
-          transform: scaleX(-1);
-          visibility: hidden;
-          width: auto;
-          height: auto;
-          ">
-        </video>
+        <video id="video"></video>
       </div>
-      <div id="scatter-gl-container"></div>
     </div>
   </q-page>
 </template>
 
 <script>
+
+
 let model, ctx, videoWidth, videoHeight, video, canvas, currentStream,
-  scatterGLHasInitialized = false, scatterGL, triangulateMesh = true;
+  scatterGLHasInitialized = false, scatterGL, triangulateMesh = false;
 const VIDEO_SIZE = 500;
+import '@tensorflow/tfjs'
+// import '@tensorflow/tfjs-node-gpu';
 import * as facemesh from '@tensorflow-models/facemesh'
 
-import TRIANGULATION from './triangulation'
+import TRIANGULATION from '../js/triangulation'
 
-// import '@tensorflow/tfjs-node-gpu';
-let cameras
 export default {
   data() {
     return {
       model: null,
-      options: options
+      options: []
     }
   },
-  mounted() {
-    console.log('face mounted')
-    main()
+  async mounted() {
+    await getInputDevices()
+  },
+  methods: {
+    startpreview: function () {
+      main()
+    },
+    record: function () {
+      //main()
+    },
+    stopMedia() {
+      stopMediaTracks(currentStream)
+    },
+    pauseMedia() {
+      //  pause()
+    }
+  }
+}
+
+function pause() {
+
+  let x = document.getElementById("pause");
+  if (x.text === "Pause Recording") {
+    x.text = "Paused";
+    currentStream.enabled = false
+  } else {
+    x.text = "Pause Recording";
+    currentStream.enabled = true
   }
 }
 
 async function main() {
 
-   this.options = await getInputDevices()
-  console.log('face mounted')
+  await setupCamera();
+  video.play();
+  videoWidth = video.videoWidth;
+  videoHeight = video.videoHeight;
+  video.width = videoWidth;
+  video.height = videoHeight;
 
-}
+  canvas = document.getElementById('output');
+  canvas.width = videoWidth;
+  canvas.height = videoHeight;
 
-async function getInputDevices() {
-  await navigator.mediaDevices.getUserMedia({video: true})
-  let videoDevices = await navigator.mediaDevices.enumerateDevices()
-  let devices = []
-  let obj = {}
-  videoDevices.forEach((element, index, array) => {
-      if (element.kind === 'videoinput') {
-        obj.label = element.label
-        obj.value = element.deviceId
-        obj.description = ""
-        obj.category = ""
-        devices.push(obj)
-        // console.log(element.deviceId); // 100, 200, 300
-        // console.log(index); // 0, 1, 2
-        // console.log(array); // same myArray object 3 times
-      }
-    }
-  );
-  return devices
+  ctx = canvas.getContext('2d');
+  ctx.translate(canvas.width, 0);
+  ctx.scale(-1, 1);
+  ctx.fillStyle = '#32EEDB';
+  ctx.strokeStyle = '#32EEDB';
+  ctx.lineWidth = 0.5;
+
+  model = await facemesh.load({maxFaces: 1});
+  await renderPrediction();
 }
 
 async function cameraChange(cameraId) {
+
   if (typeof currentStream !== 'undefined') {
     stopMediaTracks(currentStream);
     await setupCamera(cameraId);
@@ -78,6 +94,7 @@ async function cameraChange(cameraId) {
 }
 
 function drawPath(ctx, points, closePath) {
+
   const region = new Path2D();
   region.moveTo(points[0][0], points[0][1]);
   for (let i = 1; i < points.length; i++) {
@@ -91,15 +108,18 @@ function drawPath(ctx, points, closePath) {
   ctx.stroke(region);
 }
 
-
 function stopMediaTracks(stream) {
+
   stream.getTracks().forEach(track => {
     track.stop();
   });
+  video.srcObject = null
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  video = null
 }
 
-
 async function setupCamera(cameraId) {
+
   video = document.getElementById('video');
 
   const stream = await navigator.mediaDevices.getUserMedia({
@@ -154,55 +174,9 @@ async function renderPrediction() {
       }
     });
 
-    if (scatterGL != null) {
-      const pointsData = predictions.map(prediction => {
-        let scaledMesh = prediction.scaledMesh;
-        return scaledMesh.map(point => ([-point[0], -point[1], -point[2]]));
-      });
-
-      let flattenedPointsData = [];
-      for (let i = 0; i < pointsData.length; i++) {
-        flattenedPointsData = flattenedPointsData.concat(pointsData[i]);
-      }
-      const dataset = new ScatterGL.Dataset(flattenedPointsData);
-
-      if (!scatterGLHasInitialized) {
-        scatterGL.render(dataset);
-      } else {
-        scatterGL.updateDataset(dataset);
-      }
-      scatterGLHasInitialized = true;
-    }
   }
   requestAnimationFrame(renderPrediction);
 }
-
-
-//document.getElementById('main').appendChild(stats.dom);
-
-// await setupCamera(cameraId);
-// video.play();
-// videoWidth = video.videoWidth;
-// videoHeight = video.videoHeight;
-// video.width = videoWidth;
-// video.height = videoHeight;
-//
-// canvas = document.getElementById('output');
-// canvas.width = videoWidth;
-// canvas.height = videoHeight;
-// const canvasContainer = document.querySelector('.canvas-wrapper');
-// canvasContainer.style = `width: ${videoWidth}px; height: ${videoHeight}px`;
-//
-// ctx = canvas.getContext('2d');
-// ctx.translate(canvas.width, 0);
-// ctx.scale(-1, 1);
-// ctx.fillStyle = '#32eedb';
-// ctx.strokeStyle = '#32EEDB';
-// ctx.lineWidth = 0.5;
-//
-// model = await facemesh.load({maxFaces: 2});
-// await renderPrediction();
-
 </script>
 
 <style scoped>
