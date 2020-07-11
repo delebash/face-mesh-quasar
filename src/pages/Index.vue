@@ -7,8 +7,9 @@
           <q-btn v-on:click="Startpreview" color="white" text-color="black" label="Preview"/>
           <q-btn v-on:click="Startrecord" color="white" text-color="black" label="Record"/>
           <q-btn v-on:click="Stopmedia" color="white" text-color="black" label="Stop"/>
-          <div class="text-left">
+          <div class="text-center">
             <canvas id="output"></canvas>
+            <br/>
             <video id="video"></video>
           </div>
         </q-tab-panel>
@@ -59,6 +60,7 @@ export default {
   methods: {
     Startpreview: function () {
       if( typeof this.select === 'undefined' || this.select === null ){
+        cameraId = null
         alert('Please Select a camera')
       } else {
         cameraId = this.select.value
