@@ -48,7 +48,7 @@ import TRIANGULATION from '../js/triangulation'
 export default {
   data() {
     return {
-      tab: '',
+      tab: 'preview',
       select: null,
       options: []
     }
@@ -58,10 +58,10 @@ export default {
   },
   methods: {
     Startpreview: function () {
-      cameraId = this.select.value
-      if (cameraId === null) {
+      if( typeof this.select === 'undefined' || this.select === null ){
         alert('Please Select a camera')
-      }else{
+      } else {
+        cameraId = this.select.value
         main()
       }
     },
@@ -93,7 +93,6 @@ async function getCameraList() {
   return cameraList
 }
 
-
 function pause() {
 
   let x = document.getElementById("pause");
@@ -104,6 +103,16 @@ function pause() {
     x.text = "Pause Recording";
     currentStream.enabled = true
   }
+}
+
+function stopMediaTracks(stream) {
+
+  stream.getTracks().forEach(track => {
+    track.stop();
+  });
+  video.srcObject = null
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  video = null
 }
 
 async function main() {
@@ -138,30 +147,6 @@ async function cameraChange() {
   }
 }
 
-function drawPath(ctx, points, closePath) {
-
-  const region = new Path2D();
-  region.moveTo(points[0][0], points[0][1]);
-  for (let i = 1; i < points.length; i++) {
-    const point = points[i];
-    region.lineTo(point[0], point[1]);
-  }
-
-  if (closePath) {
-    region.closePath();
-  }
-  ctx.stroke(region);
-}
-
-function stopMediaTracks(stream) {
-
-  stream.getTracks().forEach(track => {
-    track.stop();
-  });
-  video.srcObject = null
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  video = null
-}
 
 async function setupCamera() {
 
@@ -186,6 +171,22 @@ async function setupCamera() {
       resolve(video);
     };
   });
+}
+
+
+function drawPath(ctx, points, closePath) {
+
+  const region = new Path2D();
+  region.moveTo(points[0][0], points[0][1]);
+  for (let i = 1; i < points.length; i++) {
+    const point = points[i];
+    region.lineTo(point[0], point[1]);
+  }
+
+  if (closePath) {
+    region.closePath();
+  }
+  ctx.stroke(region);
 }
 
 async function renderPrediction() {
