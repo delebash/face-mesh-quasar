@@ -7,6 +7,7 @@
           <q-btn v-on:click="Startpreview" color="white" text-color="black" label="Preview"/>
           <q-btn v-on:click="Startrecord" color="white" text-color="black" label="Record"/>
           <q-btn v-on:click="Stopmedia" color="white" text-color="black" label="Stop"/>
+          <q-checkbox v-model="val" label="Triangulation"/>
           <div class="text-center">
             <canvas id="output"></canvas>
             <br/>
@@ -35,8 +36,8 @@
 </template>
 <script>
 
-let cameraId, model, ctx, videoWidth, videoHeight, video, canvas, currentStream,
-  scatterGLHasInitialized = false, scatterGL, triangulateMesh = false;
+let cameraId, model, ctx, videoWidth, videoHeight, video, canvas, currentStream, record = false,
+scatterGLHasInitialized = false, scatterGL, Triangulationmesh = false
 const VIDEO_SIZE = 500;
 import '@tensorflow/tfjs'
 
@@ -51,19 +52,22 @@ export default {
     return {
       tab: 'preview',
       select: null,
-      options: []
+      options: [],
+      val: false,
     }
   },
   async mounted() {
     this.options = await getCameraList()
   },
   methods: {
+
     Startpreview: function () {
-      if( typeof this.select === 'undefined' || this.select === null ){
+      if (typeof this.select === 'undefined' || this.select === null) {
         cameraId = null
         alert('Please Select a camera')
       } else {
         cameraId = this.select.value
+        Triangulationmesh = this.val
         main()
       }
     },
@@ -201,7 +205,7 @@ async function renderPrediction() {
     predictions.forEach(prediction => {
       const keypoints = prediction.scaledMesh;
 
-      if (triangulateMesh === true) {
+      if (Triangulationmesh === true) {
         for (let i = 0; i < TRIANGULATION.length / 3; i++) {
           const points = [
             TRIANGULATION[i * 3], TRIANGULATION[i * 3 + 1],
@@ -219,6 +223,9 @@ async function renderPrediction() {
           ctx.arc(x, y, 1 /* radius */, 0, 2 * Math.PI);
           ctx.fill();
         }
+      }
+      if (record === true){
+        console.log(keypoints)
       }
     });
   }
