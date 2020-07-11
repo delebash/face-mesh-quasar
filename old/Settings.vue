@@ -1,22 +1,22 @@
 <template>
-<q-page>
-  Settings
+  <q-page>
+    Settings
     <q-select filled v-model="model" :options="options" label="Standard"/>
-</q-page>
+  </q-page>
 </template>
 
 <script>
 export default {
 
-  data () {
+  data() {
     return {
       model: null,
-      options:[]
+      options: []
     };
   },
   // App root methods
   async mounted() {
-     this.options = await getCameraList()
+    this.options = await getCameraList()
     console.log(this.options)
   }
 };

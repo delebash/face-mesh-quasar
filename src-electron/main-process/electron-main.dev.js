@@ -6,11 +6,11 @@
  */
 
 import electronDebug from 'electron-debug'
-import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
-import { app } from 'electron'
+import installExtension, {VUEJS_DEVTOOLS} from 'electron-devtools-installer'
+import {app} from 'electron'
 
 // Install `electron-debug` with `devtron`
-electronDebug({ showDevTools: true })
+electronDebug({showDevTools: true})
 
 // Install vuejs devtools
 app.whenReady().then(() => {
