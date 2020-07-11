@@ -7,7 +7,7 @@
           <q-btn v-on:click="Startpreview" color="white" text-color="black" label="Preview"/>
           <q-btn v-on:click="Startrecord" color="white" text-color="black" label="Record"/>
           <q-btn v-on:click="Stopmedia" color="white" text-color="black" label="Stop"/>
-          <q-checkbox v-model="val" label="Triangulation"/>
+          <q-checkbox @input ="Checkchange" v-model="checked" label="Triangulation"/>
           <div class="text-center">
             <canvas id="output"></canvas>
             <br/>
@@ -52,15 +52,17 @@ export default {
     return {
       tab: 'preview',
       select: null,
-      options: [],
-      val: false,
+      checked: false,
+      options: []
     }
   },
   async mounted() {
     this.options = await getCameraList()
   },
   methods: {
-
+    Checkchange: function (){
+      Triangulationmesh = this.checked
+    },
     Startpreview: function () {
       if (typeof this.select === 'undefined' || this.select === null) {
         cameraId = null
