@@ -4,9 +4,21 @@
       <q-tab-panels v-model="tab" swipeable animated style="width: 100%">
 
         <q-tab-panel class="text-center" name="preview">
-          <q-btn v-on:click="Startpreview" color="white" text-color="black" label="Preview"/>
-          <q-btn v-on:click="Startrecord" color="white" text-color="black" label="Record"/>
-          <q-btn v-on:click="Stopmedia" color="white" text-color="black" label="Stop"/>
+
+          <q-btn-toggle
+            v-model="toggle"
+            toggle-color="primary"
+            @input="Btntoggle"
+            :options="[
+        {label: 'Startpreview', value: 'Startpreview'},
+        {label: 'Startrecord', value: 'Startrecord'},
+        {label: 'Stopmedia', value: 'Stopmedia'}
+      ]"
+          />
+
+          <!--          <q-btn v-on:click="Startpreview" color="white" text-color="black" label="Preview"/>-->
+          <!--          <q-btn v-on:click="Startrecord" color="white" text-color="black" label="Record"/>-->
+          <!--          <q-btn v-on:click="Stopmedia" color="white" text-color="black" label="Stop"/>-->
           <q-checkbox @input="Checkchange" v-model="checked" label="Triangulation"/>
           <div class="text-center">
             <canvas id="output"></canvas>
@@ -53,19 +65,34 @@ export default {
       tab: 'preview',
       select: null,
       checked: false,
-      options: []
+      options: [],
+      toggle: ''
+
     }
   },
   async mounted() {
     this.options = await getCameraList()
   },
   methods: {
+    Btntoggle: function () {
+
+      if (this.toggle === 'Startpreview') {
+        this.Startpreview()
+      } else if (this.toggle === 'Startrecord') {
+        this.Startrecord()
+      } else if (this.toggle === 'Stopmedia') {
+        this.Stopmedia()
+      } else {
+        console.log('error')
+      }
+    },
     Checkchange: function () {
       Triangulationmesh = this.checked
     },
     Startpreview: function () {
       if (typeof this.select === 'undefined' || this.select === null) {
         cameraId = null
+        this.toggle = ''
         alert('Please Select a camera')
       } else {
         cameraId = this.select.value
@@ -74,7 +101,7 @@ export default {
       }
     },
     Startrecord: function () {
-
+      record = true
     },
     Stopmedia() {
       stopMediaTracks(currentStream)
@@ -119,7 +146,9 @@ function stopMediaTracks(stream) {
     track.stop();
   });
   video.srcObject = null
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, video.width, canvas.height);
+  video.height = 0
+  canvas.height = 0
   video = null
 }
 
