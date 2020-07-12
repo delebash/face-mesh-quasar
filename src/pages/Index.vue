@@ -54,8 +54,7 @@ export default {
       tab: 'preview',
       select: null,
       checked: false,
-      options: [],
-      toggle: ''
+      options: []
 
     }
   },
@@ -64,7 +63,7 @@ export default {
   },
   methods: {
     Checkchange: function () {
-    //  Triangulationmesh = this.checked
+      Triangulationmesh = this.checked
 
     },
     Startpreview: function () {
@@ -89,14 +88,6 @@ export default {
       }
     },
     Stopmedia() {
-      // let el = this.$refs.record;
-      //
-      // if (el.label === 'Stop Camera') {
-      //   el.label = 'SCamera Stopped Recording'
-      //   record = true
-      // }else{
-      //   el.label = 'Start Camera'
-      // }
       stopMediaTracks(currentStream)
     },
     pauseMedia() {
