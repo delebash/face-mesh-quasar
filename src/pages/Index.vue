@@ -92,8 +92,10 @@ export default {
           el.label = 'Start Preview'
 
           if (fs.existsSync('arrayOfObjects.json')) {
-           // jsonwriter.end()
+            jsonwriter.end()
+            fs.appendFileSync('arrayOfObjects.json', '');
             fs.renameSync('arrayOfObjects.json', 'arrayOfObjects2.json')
+
             //fs.unlinkSync('log.txt')
           }
 
@@ -123,10 +125,7 @@ export default {
     },
     Stopmedia() {
       stopMediaTracks(currentStream)
-    },
-    // pauseMedia() {
-    //   //  pause()
-    // }
+    }
   }
 }
 
