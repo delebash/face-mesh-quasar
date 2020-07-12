@@ -4,23 +4,12 @@
       <q-tab-panels v-model="tab" swipeable animated style="width: 100%">
 
         <q-tab-panel class="text-center" name="preview">
-
-          <q-btn-toggle
-            v-model="toggle"
-            toggle-color="primary"
-            @input="Btntoggle"
-            :options="[
-        {label: 'Startpreview', value: 'Startpreview'},
-        {label: 'Startrecord', value: 'Startrecord'},
-        {label: 'Stopmedia', value: 'Stopmedia'}
-      ]"
-          />
-
-          <!--          <q-btn v-on:click="Startpreview" color="white" text-color="black" label="Preview"/>-->
-          <!--          <q-btn v-on:click="Startrecord" color="white" text-color="black" label="Record"/>-->
-          <!--          <q-btn v-on:click="Stopmedia" color="white" text-color="black" label="Stop"/>-->
+          <q-btn ref='preview' v-on:click="Startpreview" color="white" text-color="black" label="Start Preview"/>
+          <q-btn ref='record' v-on:click="Startrecord" color="white" text-color="black" label="Start Recording"/>
           <q-checkbox @input="Checkchange" v-model="checked" label="Triangulation"/>
+
           <div class="text-center">
+            <br/>
             <canvas id="output"></canvas>
             <br/>
             <video id="video"></video>
@@ -74,36 +63,40 @@ export default {
     this.options = await getCameraList()
   },
   methods: {
-    Btntoggle: function () {
-
-      if (this.toggle === 'Startpreview') {
-        this.Startpreview()
-      } else if (this.toggle === 'Startrecord') {
-        this.Startrecord()
-      } else if (this.toggle === 'Stopmedia') {
-        this.Stopmedia()
-      } else {
-        console.log('error')
-      }
-    },
     Checkchange: function () {
-      Triangulationmesh = this.checked
+    //  Triangulationmesh = this.checked
+
     },
     Startpreview: function () {
-      if (typeof this.select === 'undefined' || this.select === null) {
-        cameraId = null
-        this.toggle = ''
-        alert('Please Select a camera')
-      } else {
-        cameraId = this.select.value
-        Triangulationmesh = this.val
+      let el = this.$refs.preview;
+
+      if (el.label === 'Start Preview') {
+        el.label = 'Stop Preview'
         main()
+      } else {
+        el.label = 'Start Preview'
+        stopMediaTracks(currentStream)
       }
     },
     Startrecord: function () {
-      record = true
+      let el = this.$refs.record;
+
+      if (el.label === 'Start Recording') {
+        el.label = 'Stop Recording'
+        record = true
+      } else {
+        el.label = 'Start Recording'
+      }
     },
     Stopmedia() {
+      // let el = this.$refs.record;
+      //
+      // if (el.label === 'Stop Camera') {
+      //   el.label = 'SCamera Stopped Recording'
+      //   record = true
+      // }else{
+      //   el.label = 'Start Camera'
+      // }
       stopMediaTracks(currentStream)
     },
     pauseMedia() {
