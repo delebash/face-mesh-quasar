@@ -22,7 +22,6 @@
                       :options="options"
                       label="Select Camera"
             />
-
           </div>
         </q-tab-panel>
       </q-tab-panels>
@@ -37,7 +36,8 @@
 </template>
 <script>
 
-let isMobile, isElectron, cameraId, model, ctx, videoWidth, videoHeight, video, canvas, currentStream, record = false,
+let isMobile, path, logfile, isElectron, cameraId, model, ctx, videoWidth, videoHeight, video, canvas, currentStream,
+  record = false,
   scatterGLHasInitialized = false, scatterGL, Triangulationmesh = false
 const VIDEO_SIZE = 500;
 import '@tensorflow/tfjs'
@@ -63,6 +63,7 @@ export default {
     isElectron = Platform.is.electron
   },
   methods: {
+
     Checkchange: function () {
       Triangulationmesh = this.checked
     },
@@ -80,7 +81,9 @@ export default {
         } else {
           el.label = 'Start Preview'
           stopMediaTracks(currentStream)
+          logfile.end()
           fs.unlinkSync('log.txt')
+
         }
       }
     },
@@ -89,11 +92,13 @@ export default {
       let el = this.$refs.record;
       if (el.label === 'Start Recording') {
         record = true
+        if (isElectron) {
+          logfile = fs.createWriteStream('log.txt', {flags: 'a'})
+        }
         el.label = 'Stop Recording'
       } else {
         el.label = 'Start Recording'
         record = false
-        log.end()
       }
     },
     Stopmedia() {
@@ -105,8 +110,7 @@ export default {
   }
 }
 
-async function
-getCameraList() {
+async function getCameraList() {
   let cameraList = [];
   await navigator.mediaDevices.getUserMedia({video: true})
   let mediaDevices = await navigator.mediaDevices.enumerateDevices()
@@ -154,7 +158,6 @@ async function main() {
   videoHeight = video.videoHeight;
   video.width = videoWidth;
   video.height = videoHeight;
-
   canvas = document.getElementById('output');
   canvas.width = videoWidth;
   canvas.height = videoHeight;
@@ -177,7 +180,6 @@ async function cameraChange() {
     await setupCamera();
   }
 }
-
 
 async function setupCamera() {
 
@@ -221,16 +223,12 @@ function drawPath(ctx, points, closePath) {
 }
 
 async function renderPrediction() {
-
   const predictions = await model.estimateFaces(video);
   let log
   ctx.drawImage(
     video, 0, 0, videoWidth, videoHeight, 0, 0, canvas.width, canvas.height);
 
   if (predictions.length > 0) {
-    if (isElectron) {
-      log = fs.createWriteStream('log.txt', {flags: 'a'})
-    }
     predictions.forEach(prediction => {
       const keypoints = prediction.scaledMesh;
 
@@ -257,11 +255,13 @@ async function renderPrediction() {
         // output data
         if (isElectron) {
           let line = JSON.stringify(keypoints)
-          log.write(line);
+          logfile.write(line);
         }
       }
     });
-    log.end();
+  }else {
+    logfile.end()
+    fs.unlinkSync('log.txt')
   }
   requestAnimationFrame(renderPrediction);
 }
