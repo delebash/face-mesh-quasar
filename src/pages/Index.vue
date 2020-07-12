@@ -36,7 +36,7 @@
 </template>
 <script>
 
-let isMobile, path, logfile, isElectron, cameraId, model, ctx, videoWidth, videoHeight, video, canvas, currentStream,
+let isMobile, x=0, path, logfile, isElectron, cameraId, model, ctx, videoWidth, videoHeight, video, canvas, currentStream,
   record = false,
   scatterGLHasInitialized = false, scatterGL, Triangulationmesh = false
 const VIDEO_SIZE = 500;
@@ -82,7 +82,7 @@ export default {
           el.label = 'Start Preview'
           stopMediaTracks(currentStream)
           logfile.end()
-          fs.unlinkSync('log.txt')
+          // fs.unlinkSync('log.txt')
 
         }
       }
@@ -224,13 +224,15 @@ function drawPath(ctx, points, closePath) {
 
 async function renderPrediction() {
   const predictions = await model.estimateFaces(video);
-  let log
+
   ctx.drawImage(
     video, 0, 0, videoWidth, videoHeight, 0, 0, canvas.width, canvas.height);
+  let obj = {}
 
   if (predictions.length > 0) {
     predictions.forEach(prediction => {
-      const keypoints = prediction.scaledMesh;
+       const keypoints = prediction.scaledMesh;
+
 
       if (Triangulationmesh === true) {
         for (let i = 0; i < TRIANGULATION.length / 3; i++) {
@@ -254,14 +256,19 @@ async function renderPrediction() {
       if (record === true) {
         // output data
         if (isElectron) {
-          let line = JSON.stringify(keypoints)
+          x += 1;
+          obj.frame = x
+          obj.timestamp = Date.now()
+          obj.keypoints = keypoints
+          let line = JSON.stringify(obj)
           logfile.write(line);
+         // console.log(predictions)
         }
       }
     });
-  }else {
+  } else {
+
     logfile.end()
-    fs.unlinkSync('log.txt')
   }
   requestAnimationFrame(renderPrediction);
 }
