@@ -41,11 +41,11 @@ let isMobile, isElectron, cameraId, model, ctx, videoWidth, videoHeight, video, 
   scatterGLHasInitialized = false, scatterGL, Triangulationmesh = false
 const VIDEO_SIZE = 500;
 import '@tensorflow/tfjs'
-
 // import '@tensorflow/tfjs-node-gpu';
+
+import fs from 'fs'
 import {Platform} from 'quasar'
 import * as facemesh from '@tensorflow-models/facemesh'
-
 import TRIANGULATION from '../js/triangulation'
 
 export default {
@@ -80,6 +80,7 @@ export default {
         } else {
           el.label = 'Start Preview'
           stopMediaTracks(currentStream)
+          fs.unlinkSync('log.txt')
         }
       }
     },
@@ -92,6 +93,7 @@ export default {
       } else {
         el.label = 'Start Recording'
         record = false
+        log.end()
       }
     },
     Stopmedia() {
@@ -221,10 +223,14 @@ function drawPath(ctx, points, closePath) {
 async function renderPrediction() {
 
   const predictions = await model.estimateFaces(video);
+  let log
   ctx.drawImage(
     video, 0, 0, videoWidth, videoHeight, 0, 0, canvas.width, canvas.height);
 
   if (predictions.length > 0) {
+    if (isElectron) {
+      log = fs.createWriteStream('log.txt', {flags: 'a'})
+    }
     predictions.forEach(prediction => {
       const keypoints = prediction.scaledMesh;
 
@@ -245,15 +251,17 @@ async function renderPrediction() {
           ctx.beginPath();
           ctx.arc(x, y, 1 /* radius */, 0, 2 * Math.PI);
           ctx.fill();
-          if (record === true) {
-            // output data
-            if (isElectron) {
-              // console.log(keypoints)
-            }
-          }
+        }
+      }
+      if (record === true) {
+        // output data
+        if (isElectron) {
+          let line = JSON.stringify(keypoints)
+          log.write(line);
         }
       }
     });
+    log.end();
   }
   requestAnimationFrame(renderPrediction);
 }
