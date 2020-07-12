@@ -37,13 +37,13 @@
 </template>
 <script>
 
-let cameraId, model, ctx, videoWidth, videoHeight, video, canvas, currentStream, record = false,
+let isMobile, isElectron, cameraId, model, ctx, videoWidth, videoHeight, video, canvas, currentStream, record = false,
   scatterGLHasInitialized = false, scatterGL, Triangulationmesh = false
 const VIDEO_SIZE = 500;
 import '@tensorflow/tfjs'
 
 // import '@tensorflow/tfjs-node-gpu';
-
+import {Platform} from 'quasar'
 import * as facemesh from '@tensorflow-models/facemesh'
 
 import TRIANGULATION from '../js/triangulation'
@@ -60,6 +60,8 @@ export default {
   },
   async mounted() {
     this.options = await getCameraList()
+    isMobile = Platform.is.mobile
+    isElectron = Platform.is.electron
   },
   methods: {
     Checkchange: function () {
@@ -67,36 +69,44 @@ export default {
 
     },
     Startpreview: function () {
-      let el = this.$refs.preview;
-
-      if (el.label === 'Start Preview') {
-        el.label = 'Stop Preview'
-        main()
+      if (cameraId === null) {
+        alert('Please Select a camera')
       } else {
-        el.label = 'Start Preview'
-        stopMediaTracks(currentStream)
+        let el = this.$refs.preview;
+        if (el.label === 'Start Preview') {
+          el.label = 'Stop Preview'
+          main()
+        } else {
+          el.label = 'Start Preview'
+          stopMediaTracks(currentStream)
+        }
       }
-    },
+    }
+    ,
     Startrecord: function () {
-      let el = this.$refs.record;
 
+      let el = this.$refs.record;
       if (el.label === 'Start Recording') {
-        el.label = 'Stop Recording'
         record = true
+        el.label = 'Stop Recording'
       } else {
         el.label = 'Start Recording'
+        record = false
       }
-    },
+    }
+    ,
     Stopmedia() {
       stopMediaTracks(currentStream)
-    },
+    }
+    ,
     pauseMedia() {
       //  pause()
     }
   }
 }
 
-async function getCameraList() {
+async function
+getCameraList() {
   let cameraList = [];
   await navigator.mediaDevices.getUserMedia({video: true})
   let mediaDevices = await navigator.mediaDevices.enumerateDevices()
@@ -237,10 +247,13 @@ async function renderPrediction() {
           ctx.beginPath();
           ctx.arc(x, y, 1 /* radius */, 0, 2 * Math.PI);
           ctx.fill();
+          if (record === true) {
+            // output data
+            if (isElectron) {
+              // console.log(keypoints)
+            }
+          }
         }
-      }
-      if (record === true) {
-        console.log(keypoints)
       }
     });
   }
