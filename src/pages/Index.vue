@@ -55,7 +55,6 @@ export default {
       select: null,
       checked: false,
       options: []
-
     }
   },
   async mounted() {
@@ -66,7 +65,6 @@ export default {
   methods: {
     Checkchange: function () {
       Triangulationmesh = this.checked
-
     },
     Startpreview: function () {
       if (typeof this.select === 'undefined' || this.select === null) {
@@ -95,12 +93,10 @@ export default {
         el.label = 'Start Recording'
         record = false
       }
-    }
-    ,
+    },
     Stopmedia() {
       stopMediaTracks(currentStream)
-    }
-    ,
+    },
     pauseMedia() {
       //  pause()
     }
