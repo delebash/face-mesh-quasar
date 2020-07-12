@@ -69,9 +69,12 @@ export default {
 
     },
     Startpreview: function () {
-      if (cameraId === null) {
+      if (typeof this.select === 'undefined' || this.select === null) {
+        cameraId = null
         alert('Please Select a camera')
       } else {
+        cameraId = this.select.value
+        Triangulationmesh = this.val
         let el = this.$refs.preview;
         if (el.label === 'Start Preview') {
           el.label = 'Stop Preview'
