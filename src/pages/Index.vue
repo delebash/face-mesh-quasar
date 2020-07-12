@@ -84,8 +84,7 @@ export default {
           stopMediaTracks(currentStream)
         }
       }
-    }
-    ,
+    },
     Startrecord: function () {
 
       let el = this.$refs.record;
