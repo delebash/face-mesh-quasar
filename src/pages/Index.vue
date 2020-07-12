@@ -36,17 +36,25 @@
 </template>
 <script>
 
-let isMobile, x=0, path, logfile, isElectron, cameraId, model, ctx, videoWidth, videoHeight, video, canvas, currentStream,
+let isMobile, frameClount = 0, path, logfile, isElectron, cameraId, model, ctx, videoWidth, videoHeight, video, canvas,
+  currentStream,
   record = false,
   scatterGLHasInitialized = false, scatterGL, Triangulationmesh = false
+
 const VIDEO_SIZE = 500;
 import '@tensorflow/tfjs'
 // import '@tensorflow/tfjs-node-gpu';
 
+
 import fs from 'fs'
+import JSONStream from 'jsonstream-next'
+
+let jsonwriter = JSONStream.stringify();
+
 import {Platform} from 'quasar'
 import * as facemesh from '@tensorflow-models/facemesh'
 import TRIANGULATION from '../js/triangulation'
+import prependFile from 'prepend-file';
 
 export default {
   data() {
@@ -68,6 +76,8 @@ export default {
       Triangulationmesh = this.checked
     },
     Startpreview: function () {
+
+      frameClount = 0
       if (typeof this.select === 'undefined' || this.select === null) {
         cameraId = null
         alert('Please Select a camera')
@@ -80,33 +90,43 @@ export default {
           main()
         } else {
           el.label = 'Start Preview'
-          stopMediaTracks(currentStream)
-          logfile.end()
-          // fs.unlinkSync('log.txt')
 
+          if (fs.existsSync('arrayOfObjects.json')) {
+           // jsonwriter.end()
+            fs.renameSync('arrayOfObjects.json', 'arrayOfObjects2.json')
+            //fs.unlinkSync('log.txt')
+          }
+
+          stopMediaTracks(currentStream);
         }
       }
     },
+
     Startrecord: function () {
 
       let el = this.$refs.record;
       if (el.label === 'Start Recording') {
         record = true
+
         if (isElectron) {
-          logfile = fs.createWriteStream('log.txt', {flags: 'a'})
+          if (!fs.existsSync('arrayOfObjects.json')) {
+            logfile = fs.createWriteStream('arrayOfObjects.json')
+          }
+          jsonwriter.pipe(logfile);
         }
         el.label = 'Stop Recording'
       } else {
         el.label = 'Start Recording'
         record = false
+        //  jsonwriter.end()
       }
     },
     Stopmedia() {
       stopMediaTracks(currentStream)
     },
-    pauseMedia() {
-      //  pause()
-    }
+    // pauseMedia() {
+    //   //  pause()
+    // }
   }
 }
 
@@ -126,28 +146,30 @@ async function getCameraList() {
   return cameraList
 }
 
-function pause() {
-
-  let x = document.getElementById("pause");
-  if (x.text === "Pause Recording") {
-    x.text = "Paused";
-    currentStream.enabled = false
-  } else {
-    x.text = "Pause Recording";
-    currentStream.enabled = true
-  }
-}
+// function pause() {
+//
+//   let x = document.getElementById("pause");
+//   if (x.text === "Pause Recording") {
+//     x.text = "Paused";
+//     currentStream.enabled = false
+//   } else {
+//     x.text = "Pause Recording";
+//     currentStream.enabled = true
+//   }
+// }
 
 function stopMediaTracks(stream) {
 
   stream.getTracks().forEach(track => {
     track.stop();
   });
-  video.srcObject = null
   ctx.clearRect(0, 0, video.width, canvas.height);
   video.height = 0
   canvas.height = 0
+  video.srcObject = null
   video = null
+
+
 }
 
 async function main() {
@@ -231,7 +253,7 @@ async function renderPrediction() {
 
   if (predictions.length > 0) {
     predictions.forEach(prediction => {
-       const keypoints = prediction.scaledMesh;
+      const keypoints = prediction.scaledMesh;
 
 
       if (Triangulationmesh === true) {
@@ -256,20 +278,22 @@ async function renderPrediction() {
       if (record === true) {
         // output data
         if (isElectron) {
-          x += 1;
-          obj.frame = x
+          frameClount += 1;
+          obj.faceInViewConfidence = prediction.faceInViewConfidence
+          obj.frame = frameClount
           obj.timestamp = Date.now()
           obj.keypoints = keypoints
-          let line = JSON.stringify(obj)
-          logfile.write(line);
-         // console.log(predictions)
+          console.log(obj)
+          jsonwriter.write(obj);
+          //let line = JSON.stringify(obj)
+          //logfile.write(line + ',');
+          // console.log(predictions)
         }
       }
     });
-  } else {
-
-    logfile.end()
   }
+
   requestAnimationFrame(renderPrediction);
 }
+
 </script>
